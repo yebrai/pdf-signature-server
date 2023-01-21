@@ -1,5 +1,4 @@
-const express = require("express");
-const router = express.Router();
+const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
@@ -53,7 +52,7 @@ console.log(username)
   }
 });
 
-router.post("/login", (req, res, next) => {
+router.post("/login", async(req, res, next) => {
   const { username, password, role } = req.body;
 
   if (username === "" || password === "") {
@@ -61,8 +60,8 @@ router.post("/login", (req, res, next) => {
     return;
   }
 
-  User.findOne({ username })
-    .then((foundUser) => {
+  try {
+    const foundUser = await User.findOne({ username })
       if (!foundUser) {
         res.status(401).json({ message: "Usuario no registrado." });
         return;
@@ -84,8 +83,10 @@ router.post("/login", (req, res, next) => {
       } else {
         res.status(401).json({ message: "No se ha podido autenticar al usuario" });
       }
-    })
-    .catch((err) => next(err));
+  } catch (error) {
+    next(err)
+  }
+ 
 });
 
 router.get("/verify", isAuthenticated, (req, res, next) => {
