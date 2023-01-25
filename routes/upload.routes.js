@@ -42,15 +42,30 @@ router.get("/files", (req, res) => {
 
 router.get("/download/:pdfId", (req, res) => {
   const {pdfId} = req.params
-  const files = req.files;
-  console.log(pdfId)
-  for (let i = 0; i < files.file.length; i++) {
-    // Procesar archivo (ej: guardar en base de datos, mover a una carpeta)
-    console.log(files.file)
-    pdfArr.push(files.file)
-  }
+  // const files = req.files;
+  console.log("pdfId", pdfId)
+
+
+
+        fs.readFile(`uploads/${pdfId}`, (err, data) => { 
+          if (err) {
+            res.status(500).send("Error al leer el archivo");
+          } else {
+            
+              console.log("data", data);
+              res.status(200).json(data);
+            
+          }
+        })
+
+
+  // for (let i = 0; i < files.file.length; i++) {
+  //   // Procesar archivo (ej: guardar en base de datos, mover a una carpeta)
+  //   console.log(files.file)
+  //   pdfArr.push(files.file)
+  // }
   
-  res.status(200).json(pdfArr);
+  // res.status(200).json(pdfArr);
 });
 
 
