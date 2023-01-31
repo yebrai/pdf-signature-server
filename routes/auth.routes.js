@@ -84,7 +84,7 @@ router.post("/login", async(req, res, next) => {
         res.status(401).json({ message: "No se ha podido autenticar al usuario" });
       }
   } catch (error) {
-    next(err)
+    next(err) 
   }
  
 });
