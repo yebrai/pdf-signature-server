@@ -89,6 +89,57 @@ router.post("/login", async(req, res, next) => {
  
 });
 
+router.patch("/changepassword", isAuthenticated, async (req, res, next) => {
+  const { oldPassword, password, password2 } = req.body;
+
+
+  // Validar que todos los campos esten llenos
+  if (!oldPassword || !password || !password2) {
+    res.status(400).json({ message: "Por favor, rellene todos los campos" });
+    return;
+  }
+  // Coincidan las dos contraseñas
+  if (password !== password2) {
+    res.status(400).json({ message: "Las nuevas contraseñas deben coincidir" });
+    return;
+  }
+  // Fortaleza de la contraseña
+  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm;
+  if (!passwordRegex.test(password)) {
+    res
+      .status(400)
+      .json({
+        message:
+          "La contraseña debe tener al menos 8 letras, una mayúscula y un número",
+      });
+    return;
+  }
+
+  try {
+    // Validar que la contraseña sea correcta
+    const foundUser = await User.findById(req.payload._id);
+    const isPasswordValid = await bcrypt.compare(
+      oldPassword,
+      foundUser.password
+    );
+    if (isPasswordValid === false) {
+      res.status(400).json({ message: "Contraseña antigua incorrecta" }); 
+      return;
+    }
+
+    //codificar la contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    //contraseña actualizada
+    await User.findByIdAndUpdate(req.payload._id, { password: hashPassword });
+
+    res.status(200).json("Password Updated");
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/verify", isAuthenticated, (req, res, next) => {
   res.status(200).json(req.payload);
 });
