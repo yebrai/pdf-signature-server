@@ -10,7 +10,7 @@ router.post("/signup", async (req, res, next) => {
   if (!username || !password) {
     res
       .status(400)
-      .json({ message: "Todos los campos deben ser rellenados" });
+      .json({ message: "Por favor, rellene todos los campos" });
     return;
   }
 
@@ -55,14 +55,15 @@ console.log(username)
 router.post("/login", async(req, res, next) => {
   const { username, password, role } = req.body;
 
-  if (username === "" || password === "") {
-    res.status(400).json({ message: "Rellene los campos de usuario o contraseña." });
+  if (!username || !password ) {
+    res.status(400).json({ message: "Por favor, rellene todos los campos" });
     return;
   }
 
+    
   try {
     const foundUser = await User.findOne({ username })
-      if (!foundUser) {
+    if (!foundUser) {
         res.status(401).json({ message: "Usuario no registrado." });
         return;
       }
@@ -84,9 +85,10 @@ router.post("/login", async(req, res, next) => {
         res.status(401).json({ message: "No se ha podido autenticar al usuario" });
       }
   } catch (error) {
-    next(err) 
+    next(error) 
   }
- 
+  
+
 });
 
 router.patch("/changepassword", isAuthenticated, async (req, res, next) => {
