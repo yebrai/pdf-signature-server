@@ -23,7 +23,8 @@ const multerFilter = (req, file, cb) => {
   if (file.mimetype.split("/")[1] === "pdf") {
     cb(null, true);
   } else {
-    cb(new Error("Envia sólo archivos PDF"), false);
+    req.fileValidationError = true;
+    cb(null, false);
   }
 };
 //Calling the "multer" Function
@@ -37,18 +38,16 @@ const path = require("path");
 
 //const pdfArr = []
 
-router.post("/", upload.any(), (req, res) => {
-  // const files = req.files;
-
-  // for (let i = 0; i < files.file.length; i++) {
-  //   // Procesar archivo (ej: guardar en base de datos, mover a una carpeta)
-  //   console.log(files.file)
-  //   pdfArr.push(files.file)
-  // }
-
+router.post("/", upload.any(), (req, res,) => {
+ if (req.fileValidationError) {
   res
-    .status(200)
-    .json({ message: "Archivos recibidos correctamente", success: true });
+     .status(400)
+     .json({ message: "Envia sólo archivos PDF", success: false });
+ } else {
+   res
+     .status(200)
+     .json({ message: "Archivos recibidos correctamente", success: true });
+ }
 });
 
 router.get("/files", (req, res) => {
@@ -69,7 +68,7 @@ router.get("/files", (req, res) => {
               readFiles.push({ fileName: file, url: `/signed/${file}` });
               if (readFiles.length === files.length) {
                 // Enviar la lista de archivos al cliente
-                console.log(readFiles);
+                // console.log(readFiles);
                 res.status(200).json(readFiles);
               }
             }
