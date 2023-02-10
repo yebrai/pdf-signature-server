@@ -4,6 +4,9 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
+const fs = require("fs");
+const path = require("path");
+
 router.post("/signup", async (req, res, next) => {
   const { username, password } = req.body;
 
@@ -53,7 +56,7 @@ console.log(username)
 });
 
 router.post("/login", async(req, res, next) => {
-  const { username, password, role } = req.body;
+  const { username, password, role } = req.body;  //role, seguro?
 
   if (!username || !password ) {
     res.status(400).json({ message: "Por favor, rellene todos los campos" });
@@ -73,12 +76,18 @@ router.post("/login", async(req, res, next) => {
       if (passwordCorrect) {
         const { _id, username } = foundUser;
 
-        const payload = { _id, username, role };
+        const payload = { _id, username, role }; //role, seguro? no? pero si para admin?
 
         const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
           algorithm: "HS256",
           expiresIn: "3h",
         });
+
+        if (!fs.existsSync(path.join(__dirname, "..", `signed/${username}`))){
+          fs.mkdir(path.join(__dirname, "..", `signed/${username}`), {recursive: true}, err => {
+            return res.status(500).json({ message: "No se ha podido crear el directorio" })
+          })
+        }
 
         res.status(200).json({ authToken: authToken });
       } else {
